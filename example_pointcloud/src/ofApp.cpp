@@ -11,7 +11,10 @@ class ofApp : public ofBaseApp{
     ofVboMesh mesh;
     
     ofPixels colorImage;
+    
 public:
+    
+    bool paintMesh;
     
     void setup()
     {
@@ -33,6 +36,7 @@ public:
         ecam.setAutoDistance(false);
         ecam.setDistance(200);
         
+        paintMesh = true;
         
     }
     
@@ -42,39 +46,38 @@ public:
             mesh.clear();
             
             colorImage = kinect0.getColorPixelsRef();
-            
-            {
-                int step = 1;
-                int h = kinect0.getDepthPixelsRef().getHeight();
-                int w = kinect0.getDepthPixelsRef().getWidth();
-                float cW = colorImage.getWidth();
-                float cH = colorImage.getHeight();
-                //cout << w << " width " << "scale " << cW << "height " << h <<  "scale :" << cH << endl;
-                for(int y = 0; y < h; y += step) {
-                    for(int x = 0; x < w; x += step) {
-                        float dist = kinect0.getDistanceAt(x, y);
-                        if(dist > 50 && dist < 5000) {
-                            ofVec3f pt = kinect0.getWorldCoordinateAt(x, y, dist);
-                            
-                            ofColor c;
+            int step = 1;
+            int h = kinect0.getDepthPixelsRef().getHeight();
+            int w = kinect0.getDepthPixelsRef().getWidth();
+            float cW = colorImage.getWidth();
+            float cH = colorImage.getHeight();
+            //cout << w << " width " << "scale " << cW << "height " << h <<  "scale :" << cH << endl;
+            for(int y = 0; y < h; y += step) {
+                for(int x = 0; x < w; x += step) {
+                    float dist = kinect0.getDistanceAt(x, y);
+                    if(dist > 50 && dist < 5000) {
+                        ofVec3f pt = kinect0.getWorldCoordinateAt(x, y, dist);
+                        
+                        ofColor c;
+                        if (paintMesh){
                             int colX = x * 3.75;
                             int colY = y * 2.55;
-                           c =  colorImage.getColor(colX, colY);
-                           // cout << c << " " << colX << " " << colY << endl;
+                            c =  colorImage.getColor(colX, colY);
+                        } else {
+                            // cout << c << " " << colX << " " << colY << endl;
                             float h = ofMap(dist, 50, 200, 0, 255, true);
-                            //c.setHsb(h, 255, 255);
-                            mesh.addColor(c);
-                            mesh.addVertex(pt);
+                            c.setHsb(h, 255, 255);
                         }
+                        mesh.addColor(c);
+                        mesh.addVertex(pt);
                     }
                 }
-
             }
+            
         }
     }
     
-    void draw()
-    {
+    void draw() {
         ofClear(0);
         
         if (mesh.getVertices().size()) {
@@ -93,7 +96,15 @@ public:
         ofDrawBitmapStringHighlight(ofToString(ofGetFrameRate()), 10, 20);
         ofDrawBitmapStringHighlight("Device Count : " + ofToString(ofxMultiKinectV2::getDeviceCount()), 10, 40);
     }
+    
+    void keyPressed(int key) {
+        if (key == 'p') {
+            paintMesh =  !paintMesh;
+            
+        }
+    }
 };
+
 
 //#include "ofAppGLFWWindow.h"
 //========================================================================
@@ -106,3 +117,4 @@ int main( ){
     ofRunApp(new ofApp());
     
 }
+
