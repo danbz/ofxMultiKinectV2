@@ -12,9 +12,21 @@ class ofApp : public ofBaseApp{
     
     ofPixels colorImage;
     
+    float irXres = 512;
+    float irYres = 424;
+    float colorXres = 1920;
+    float colorYres = 1080;
+    
+    float irXdeg = 70.6;
+    float irYdeg = 60;
+    float colorXdeg = 84.1;
+    float colorYdeg = 53.8;
+    
+    
 public:
     
     bool paintMesh;
+    bool myColor;
     
     void setup()
     {
@@ -37,6 +49,7 @@ public:
         ecam.setDistance(200);
         
         paintMesh = true;
+        myColor = true;
         
     }
     
@@ -52,17 +65,39 @@ public:
             float cW = colorImage.getWidth();
             float cH = colorImage.getHeight();
             //cout << w << " width " << "scale " << cW << "height " << h <<  "scale :" << cH << endl;
-            for(int y = 0; y < h; y += step) {
-                for(int x = 0; x < w; x += step) {
-                    float dist = kinect0.getDistanceAt(x, y);
-                    if(dist > 50 && dist < 5000) {
+            //   for(int y = 0; y < h; y += step) {
+            //     for(int x = 0; x < w; x += step) {
+            
+            int startH = irXres * ((irXdeg - colorXdeg) / 2)/irXdeg;
+            int endH = irXres - startH;
+            
+            int startW = 0;
+            int endW = kinect0.getDepthPixelsRef().getWidth();;
+            
+            int startColorW = colorXres * (((colorXdeg - irXdeg)/2)/colorXdeg);
+            int endColorW = colorXres - startColorW;
+          //  float dist;
+
+            
+            for(int y = startH; y < endH; y += step) {
+                for(int x = startW; x < endW; x += step) {
+                    
+                  //dist =  kinect0.getDistanceAt(x, y);
+                   float dist = kinect0.getDistanceAt(x, y);
+                    
+                    if(dist > 1 && dist < 5000) {
                         ofVec3f pt = kinect0.getWorldCoordinateAt(x, y, dist);
                         
                         ofColor c;
                         if (paintMesh){
                             int colX = x * 3.75;
                             int colY = y * 2.55;
-                            c =  colorImage.getColor(colX, colY);
+                            if (myColor) {
+                                c =  colorImage.getColor(colX, colY);
+                            } else {
+                                
+                                c = kinect0.getColorAt(startColorW + (x / irXres) * (endColorW - startColorW), (y / irYres) * colorYres);
+                            }
                         } else {
                             // cout << c << " " << colX << " " << colY << endl;
                             float h = ofMap(dist, 50, 200, 0, 255, true);
@@ -82,7 +117,7 @@ public:
         
         if (mesh.getVertices().size()) {
             ofPushStyle();
-            glPointSize(2);
+            glPointSize(1);
             ecam.begin();
             ofDrawAxis(100);
             ofPushMatrix();
@@ -95,11 +130,17 @@ public:
         
         ofDrawBitmapStringHighlight(ofToString(ofGetFrameRate()), 10, 20);
         ofDrawBitmapStringHighlight("Device Count : " + ofToString(ofxMultiKinectV2::getDeviceCount()), 10, 40);
+        ofDrawBitmapStringHighlight("using my measure : " + to_string(myColor) , 10, 60);
+
     }
     
     void keyPressed(int key) {
         if (key == 'p') {
             paintMesh =  !paintMesh;
+            
+        }
+        if (key == 'c') {
+            myColor =  !myColor;
             
         }
     }

@@ -223,6 +223,23 @@ float ofxMultiKinectV2::getDistanceAt(int x, int y) {
     return depthPix[x + y * depthPix.getWidth()] * 0.1; // mm to cm
 }
 
+ofColor ofxMultiKinectV2::getColorAt(int x, int y) {
+    
+    if (!colorPix.isAllocated()) {
+        return ofColor(0);
+    }
+    
+    int index = (y * colorPix.getWidth() + x) * 3;
+    ofColor c;
+    c.r = colorPix[index + 0];
+    c.g = colorPix[index + 1];
+    c.b = colorPix[index + 2];
+    c.a = 255;
+    
+    return c;
+}
+
+
 // TODO: use undistorted
 ofVec3f ofxMultiKinectV2::getWorldCoordinateAt(int x, int y) {
     return getWorldCoordinateAt(x, y, getDistanceAt(x, y));

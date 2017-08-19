@@ -43,6 +43,8 @@ public:
     ofProtonect2* getProtonect() {return protonect2;}
     
     float getDistanceAt(int x, int y);
+    ofColor getColorAt(int x, int y);
+    
     ofVec3f getWorldCoordinateAt(int x, int y);
     ofVec3f getWorldCoordinateAt(int x, int y, float z);
 protected:
